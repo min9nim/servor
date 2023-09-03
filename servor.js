@@ -146,12 +146,12 @@ module.exports = async ({
 
     // Respond to requests without a file extension
 
-    const serveRoute = (res, pathname) => {
+    const serveRoute = (req, res, pathname) => {
         const index = static
             ? path.join(root, pathname, fallback)
             : path.join(root, fallback)
 
-        logger.info(pathname)
+        logger.info(req.socket.remoteAddress, pathname)
 
         if (!fs.existsSync(index))
             return serveDirectoryListing(res, pathname)
@@ -178,12 +178,13 @@ module.exports = async ({
     // Start the server and route requests
 
     server((req, res) => {
+        logger.info(4, forwardedIpsStr,)
         const decodePathname = decodeURI(url.parse(req.url).pathname)
         const pathname = path.normalize(decodePathname).replace(/^(\.\.(\/|\\|$))+/, '')
         res.setHeader('access-control-allow-origin', '*')
         if (reload && pathname === '/livereload') return serveReload(res)
         if (!isRouteRequest(pathname)) return serveStaticFile(res, pathname)
-        return serveRoute(res, pathname)
+        return serveRoute(req, res, pathname)
     }).listen(parseInt(port, 10))
 
     // Notify livereload reloadClients on file change
