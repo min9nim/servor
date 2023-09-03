@@ -178,7 +178,6 @@ module.exports = async ({
     // Start the server and route requests
 
     server((req, res) => {
-        logger.info(4, forwardedIpsStr,)
         const decodePathname = decodeURI(url.parse(req.url).pathname)
         const pathname = path.normalize(decodePathname).replace(/^(\.\.(\/|\\|$))+/, '')
         res.setHeader('access-control-allow-origin', '*')
