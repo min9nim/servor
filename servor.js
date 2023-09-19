@@ -199,6 +199,7 @@ module.exports = async ({
       const decodePathname = decodeURI(url.parse(req.url).pathname)
       pathname = path.normalize(decodePathname).replace(/^(\.\.(\/|\\|$))+/, '')
     } catch (e) {
+      console.error('req.url: ' + req.url)
       console.error(e)
       pathname = '/'
     }
