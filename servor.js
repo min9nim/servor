@@ -151,9 +151,10 @@ module.exports = async ({
             ? path.join(root, pathname, fallback)
             : path.join(root, fallback)
 
-        logger.info(`[${req.socket.remoteAddress}]`)
-        const ipLocation = await fetch('http://ip-api.com/json/'+req.socket.remoteAddress).then(res => res.json())
-        logger.info(req.socket.remoteAddress, ipLocation.country + ' ' + ipLocation.regionName + ' ' + ipLocation.city, pathname)
+        const ip = req.socket.remoteAddress.slice(7)
+        logger.info(`[${ip}]`)
+        const ipLocation = await fetch('http://ip-api.com/json/'+ip).then(res => res.json())
+        logger.info(ip, ipLocation.country + ' ' + ipLocation.regionName + ' ' + ipLocation.city, pathname)
 
         if (!fs.existsSync(index))
             return serveDirectoryListing(res, pathname)
