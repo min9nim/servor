@@ -22,6 +22,7 @@
   "author": "Luke Jackson <lukejacksonn@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "prettier": "^3.0.3",
     "puppeteer": "^3.0.4"
   },
   "dependencies": {
