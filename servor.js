@@ -5,11 +5,12 @@ const http = require('http')
 const http2 = require('http2')
 const https = require('https')
 const zlib = require('zlib')
-const {default: createLogger, simpleFormat} = require('if-logger')
+const { default: createLogger, simpleFormat } = require('if-logger')
 const dayjs = require('dayjs')
 
 const logger = createLogger({
-  format: simpleFormat, tags: [
+  format: simpleFormat,
+  tags: [
     () =>
       dayjs().format(
         process.env.REACT_APP_LOG_DATETIME_FORMAT || 'YYYY-MM-DD HH:mm:ss',
@@ -20,19 +21,18 @@ const logger = createLogger({
 const mimeTypes = require('./utils/mimeTypes.js')
 const directoryListing = require('./utils/directoryListing.js')
 
-const {fileWatch, usePort, networkIps} = require('./utils/common.js')
-
+const { fileWatch, usePort, networkIps } = require('./utils/common.js')
 
 module.exports = async ({
-                          root = '.',
-                          module = false,
-                          fallback = module ? 'index.js' : 'index.html',
-                          reload = true,
-                          static = false,
-                          inject = '',
-                          credentials,
-                          port,
-                        } = {}) => {
+  root = '.',
+  module = false,
+  fallback = module ? 'index.js' : 'index.html',
+  reload = true,
+  static = false,
+  inject = '',
+  credentials,
+  port,
+} = {}) => {
   // Try start on specified port then fail or find a free port
 
   logger.info('config: ', {
@@ -74,9 +74,9 @@ module.exports = async ({
   const protocol = credentials ? 'https' : 'http'
   const server = credentials
     ? reload
-      ? (cb) => https.createServer(credentials, cb)
-      : (cb) => http2.createSecureServer(credentials, cb)
-    : (cb) => http.createServer(cb)
+      ? cb => https.createServer(credentials, cb)
+      : cb => http2.createSecureServer(credentials, cb)
+    : cb => http.createServer(cb)
 
   const livereload = reload
     ? `
@@ -92,8 +92,8 @@ module.exports = async ({
 
   // Server utility functions
 
-  const isRouteRequest = (pathname) => !~pathname.split('/').pop().indexOf('.')
-  const utf8 = (file) => Buffer.from(file, 'binary').toString('utf8')
+  const isRouteRequest = pathname => !~pathname.split('/').pop().indexOf('.')
+  const utf8 = file => Buffer.from(file, 'binary').toString('utf8')
 
   const baseDoc = (pathname = '', base = path.join('/', pathname, '/')) =>
     `<!doctype html><meta charset="utf-8"/><base href="${base}"/>`
@@ -110,7 +110,7 @@ module.exports = async ({
       file = zlib.gzipSync(utf8(file))
       encoding = 'utf8'
     }
-    res.writeHead(status, {'content-type': mimeTypes(ext)})
+    res.writeHead(status, { 'content-type': mimeTypes(ext) })
     res.write(file, encoding)
     res.end()
   }
@@ -122,7 +122,7 @@ module.exports = async ({
 
   // Respond to reload requests with keep alive
 
-  const serveReload = (res) => {
+  const serveReload = res => {
     res.writeHead(200, {
       connection: 'keep-alive',
       'content-type': 'text/event-stream',
@@ -152,12 +152,20 @@ module.exports = async ({
       : path.join(root, fallback)
 
     const ip = req.socket.remoteAddress.slice(7)
-    const ipLocation = await fetch('http://ip-api.com/json/' + ip).then(res => res.json())
-    const location = ipLocation.status === 'fail' ? ipLocation.message : ipLocation.country + ' ' + ipLocation.regionName + ' ' + ipLocation.city
+    const ipLocation = await fetch('http://ip-api.com/json/' + ip).then(res =>
+      res.json(),
+    )
+    const location =
+      ipLocation.status === 'fail'
+        ? ipLocation.message
+        : ipLocation.country +
+          ' ' +
+          ipLocation.regionName +
+          ' ' +
+          ipLocation.city
     logger.info(ip, location, pathname)
 
-    if (!fs.existsSync(index))
-      return serveDirectoryListing(res, pathname)
+    if (!fs.existsSync(index)) return serveDirectoryListing(res, pathname)
     fs.readFile(index, 'binary', (err, file) => {
       if (err) return sendError(res, 500)
       const status = pathname === '/' || static ? 200 : 301
@@ -173,7 +181,7 @@ module.exports = async ({
   const serveDirectoryListing = (res, pathname) => {
     const uri = path.join(root, pathname)
     if (!fs.existsSync(uri)) return sendError(res, 404)
-    res.writeHead(200, {'Content-Type': 'text/html'})
+    res.writeHead(200, { 'Content-Type': 'text/html' })
     res.write(baseDoc(pathname) + directoryListing(uri) + livereload)
     res.end()
   }
@@ -198,10 +206,10 @@ module.exports = async ({
   // Notify livereload reloadClients on file change
 
   reload &&
-  fileWatch(root, () => {
-    while (reloadClients.length > 0)
-      sendMessage(reloadClients.pop(), 'message', 'reload')
-  })
+    fileWatch(root, () => {
+      while (reloadClients.length > 0)
+        sendMessage(reloadClients.pop(), 'message', 'reload')
+    })
 
   // Close socket connections on sigint
 
@@ -210,6 +218,6 @@ module.exports = async ({
     process.exit()
   })
 
-  const x = {url: `${protocol}://localhost:${port}`}
-  return {...x, root, protocol, port, ips: networkIps}
+  const x = { url: `${protocol}://localhost:${port}` }
+  return { ...x, root, protocol, port, ips: networkIps }
 }
