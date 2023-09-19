@@ -152,9 +152,9 @@ module.exports = async ({
             : path.join(root, fallback)
 
         const ip = req.socket.remoteAddress.slice(7)
-        logger.info(`[${ip}]`)
         const ipLocation = await fetch('http://ip-api.com/json/'+ip).then(res => res.json())
-        logger.info(ip, ipLocation.country + ' ' + ipLocation.regionName + ' ' + ipLocation.city, pathname)
+        const location = ipLocation.status === 'fail' ? ipLocaton.message : ipLocation.country + ' ' + ipLocation.regionName + ' ' + ipLocation.city
+        logger.info(ip, location, pathname)
 
         if (!fs.existsSync(index))
             return serveDirectoryListing(res, pathname)
