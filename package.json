@@ -17,6 +17,7 @@
     "start": "node cli tests/example --reload --browse --static --module",
     "start:secure": "sudo node cli tests/example --reload --browse --secure --static --module",
     "cleanup": "rm -f servor.key servor.crt",
+    "reformat": "prettier --write",
     "test": "npm run cleanup && cd tests && node index.js"
   },
   "author": "Luke Jackson <lukejacksonn@gmail.com>",
