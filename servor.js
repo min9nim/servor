@@ -146,12 +146,14 @@ module.exports = async ({
 
     // Respond to requests without a file extension
 
-    const serveRoute = (req, res, pathname) => {
+    const serveRoute = async (req, res, pathname) => {
         const index = static
             ? path.join(root, pathname, fallback)
             : path.join(root, fallback)
 
-        logger.info(req.socket.remoteAddress, pathname)
+        logger.info(`[${req.socket.remoteAddress}]`)
+        const ipLocation = await fetch('http://ip-api.com/json/'+req.socket.remoteAddress).then(res => res.json())
+        logger.info(req.socket.remoteAddress, ipLocation.country + ' ' + ipLocation.regionName + ' ' + ipLocation.city, pathname)
 
         if (!fs.existsSync(index))
             return serveDirectoryListing(res, pathname)
