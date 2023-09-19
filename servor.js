@@ -178,8 +178,14 @@ module.exports = async ({
     // Start the server and route requests
 
     server((req, res) => {
-        const decodePathname = decodeURI(url.parse(req.url).pathname)
-        const pathname = path.normalize(decodePathname).replace(/^(\.\.(\/|\\|$))+/, '')
+        let pathname
+        try{
+            const decodePathname = decodeURI(url.parse(req.url).pathname)
+            pathname = path.normalize(decodePathname).replace(/^(\.\.(\/|\\|$))+/, '')
+        }catch(e){
+            console.error(e)
+            pathname = '/'
+        }
         res.setHeader('access-control-allow-origin', '*')
         if (reload && pathname === '/livereload') return serveReload(res)
         if (!isRouteRequest(pathname)) return serveStaticFile(res, pathname)
