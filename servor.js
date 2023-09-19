@@ -152,18 +152,23 @@ module.exports = async ({
       : path.join(root, fallback)
 
     const ip = req.socket.remoteAddress.slice(7)
-    const ipLocation = await fetch('http://ip-api.com/json/' + ip).then(res =>
-      res.json(),
-    )
-    const location =
-      ipLocation.status === 'fail'
-        ? ipLocation.message
-        : ipLocation.country +
-          ' ' +
-          ipLocation.regionName +
-          ' ' +
-          ipLocation.city
-    logger.info(ip, location, pathname)
+    try {
+      const ipLocation = await fetch('http://ip-api.com/json/' + ip).then(res =>
+        res.json(),
+      )
+      const location =
+        ipLocation.status === 'fail'
+          ? ipLocation.message
+          : ipLocation.country +
+            ' ' +
+            ipLocation.regionName +
+            ' ' +
+            ipLocation.city
+      logger.info(ip, location, pathname)
+    } catch (e) {
+      logger.error(ip)
+      logger.error(e)
+    }
 
     if (!fs.existsSync(index)) return serveDirectoryListing(res, pathname)
     fs.readFile(index, 'binary', (err, file) => {
