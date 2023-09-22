@@ -147,29 +147,10 @@ module.exports = async ({
 
   // Respond to requests without a file extension
 
-  const serveRoute = async (req, res, pathname) => {
+  const serveRoute = (req, res, pathname) => {
     const index = static
       ? path.join(root, pathname, fallback)
       : path.join(root, fallback)
-
-    const ip = req.socket.remoteAddress.slice(7)
-    try {
-      const ipLocation = await fetch('http://ip-api.com/json/' + ip).then(res =>
-        res.json(),
-      )
-      const location =
-        ipLocation.status === 'fail'
-          ? ipLocation.message
-          : ipLocation.country +
-            ' ' +
-            ipLocation.regionName +
-            ' ' +
-            ipLocation.city
-      logger.info(ip, location, pathname)
-    } catch (e) {
-      logger.error(ip)
-      logger.error(e)
-    }
 
     if (!fs.existsSync(index)) return serveDirectoryListing(res, pathname)
     fs.readFile(index, 'binary', (err, file) => {
@@ -194,13 +175,32 @@ module.exports = async ({
 
   // Start the server and route requests
 
-  server((req, res) => {
+  server(async (req, res) => {
+    const ip = req.socket.remoteAddress.slice(7)
+    let location = '-'
+    try {
+      const ipLocation = await fetch('http://ip-api.com/json/' + ip).then(res =>
+        res.json(),
+      )
+      location =
+        ipLocation.status === 'fail'
+          ? ipLocation.message
+          : ipLocation.country +
+          ' ' +
+          ipLocation.regionName +
+          ' ' +
+          ipLocation.city
+    } catch (e) {
+      logger.error(e)
+    }  finally{
+      logger.info(ip, location, req.url)
+    }
+
     let pathname
     try {
       const decodePathname = decodeURI(url.parse(req.url).pathname)
       pathname = path.normalize(decodePathname).replace(/^(\.\.(\/|\\|$))+/, '')
     } catch (e) {
-      console.error('req.url: ' + req.url)
       console.error(e)
       pathname = '/'
     }
