@@ -138,6 +138,7 @@ module.exports = async ({
   const serveStaticFile = (res, pathname) => {
     const uri = path.join(root, pathname)
     let ext = uri.replace(/^.*[\.\/\\]/, '').toLowerCase()
+    logger.info('serveStaticFile: '  + uri)
     if (!fs.existsSync(uri)) return sendError(res, 404)
     fs.readFile(uri, 'binary', (err, file) =>
       err ? sendError(res, 500) : sendFile(res, 200, file, ext),
