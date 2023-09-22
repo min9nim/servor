@@ -138,7 +138,7 @@ module.exports = async ({
   const serveStaticFile = (res, pathname) => {
     const uri = path.join(root, pathname)
     let ext = uri.replace(/^.*[\.\/\\]/, '').toLowerCase()
-    logger.info('serveStaticFile: '  + uri)
+    logger.info('serveStaticFile: ' + uri)
     if (!fs.existsSync(uri)) return sendError(res, 404)
     fs.readFile(uri, 'binary', (err, file) =>
       err ? sendError(res, 500) : sendFile(res, 200, file, ext),
@@ -207,6 +207,8 @@ module.exports = async ({
     res.setHeader('access-control-allow-origin', '*')
     if (reload && pathname === '/livereload') return serveReload(res)
     if (!isRouteRequest(pathname)) return serveStaticFile(res, pathname)
+    if (fs.existsSync(path.join(root, pathname + 'index.html')))
+      return serveStaticFile(res, pathname + 'index.html')
     return serveRoute(req, res, pathname)
   }).listen(parseInt(port, 10))
 
